@@ -1,0 +1,6 @@
+fastAPi
+uvicorn
+requests
+SQLAlchamey
+python-dotenv
+beautifulsoup4
