@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app import models, schema
+import models, schema
 
 
 
@@ -43,7 +43,7 @@ def get_spec_by_name(db:Session, spec_name:str):
 
 def create_spec(db: Session, spec:schema.SpecCreate, model_id:int):
     db_spec =models.Spec(**spec.dict(exclude_unset=True),
-                          model_id=model_id)
+                             model_id=model_id)
     db.add(db_spec)
     db.commit()
     db.refresh(db_spec)
