@@ -1,15 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
-from app.models import Brand, Model, Base
-from app import database
+from models import Brand, Model
+from database import Base, engine, SessionLocal
 
 
 import httpx
 
 
-Base.metadata.create_all(bind=database.engine)
-db:Session = database.SessionLocal()
+Base.metadata.create_all(bind=engine)
+db:Session = SessionLocal()
 
 
 
@@ -39,15 +39,19 @@ for brand in bran_list:
     inserted_models = set()
 
     for year in years:
-        url= "https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformakeyear/make/{brand}/modelyear/{year}?format=json"
+        url= f"https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformakeyear/make/{brand}/modelyear/{year}?format=json"
         resp = requests.get(url)
+        print(resp.text)
         data = resp.json().get("Results",[])
+        
 
         for item in data:
             model_name = item["Model_Name"]
 
             if model_name in inserted_models:
                 continue
+            if len(inserted_models) >= 25:
+                break
             inserted_models.add(model_name)
 
             db_model = db.query(Model).filter_by( name = model_name, year = year, brand_id = db_brand.id).first()
@@ -57,6 +61,9 @@ for brand in bran_list:
                 db.commit()
                 db.refresh(db_model)
                 print(f"added {brand} {model_name}{year} to db")
+print("complete")
+db.close()
+            
 
 
 

@@ -1,32 +1,29 @@
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
-from app import models, database
+
 import httpx
 
-
-
-models.Base.metadata.create_all(bind=database.engine)
-db:Session = database.SessionLocal()
 
 
 
 
 brand_list = [
-    "Toyota", "Honda","Ford","Mercedes","Chevrolet","Nissan", "Volkswagen","BMW"
+    "Toyota", "Honda","Ford","Mercedes","Chevrolet","Nissan", "Volkswagen","BMW", "Tesla"
     ,"Hyundai", "Kai","Mazda","Audi","Lexus","Subaru","Volvo"
 ]
 
 
 
 
-url = f"https://en.wikipedia.org/wiki/Toyota_Auris"
+url = f"https://en.wikipedia.org/wiki/Toyota_Yaris"
 headers = {
         "useAgent":"CarSpecScraper/0.1 (contact:toshirou2002@gmail.com)"
     
     }
 def scrape_wiki_specs(url):
     response = httpx.get(url, headers=headers)
+   
     
     if response.status_code!=200:
         print("not sucessful")
@@ -36,14 +33,16 @@ def scrape_wiki_specs(url):
     specs={}
 
     table = soup.find("table", class_=lambda x:x and"infobox" in x)
-   
+    
     if not table:
         print("table not found")
         return None
 
 
     for row in table.find_all("tr"):
-        if row.th and row.td:
+        header = row.find("th")
+        value = row.find("td")
+        if header and value:
             key = row.th.get_text(strip=True).lower()
             value = row.td.get_text(strip=True)
             if "engine" in key:
@@ -54,6 +53,14 @@ def scrape_wiki_specs(url):
                 specs["body_type"] = value
             elif "weight" in key:
                 specs["weight"] = value
+            elif "power" in key or "horsepower" in key:
+                specs["horsepower"] = value
+            elif "acceleration" in key:
+                specs["acceleration"] = value
+            elif "transmission" in key:
+                specs["transmission"] = value
+            elif "Battery" in key:
+                specs["Battery"] = value
 
     img_tag = table.find("a",{"class":"image"})
   
