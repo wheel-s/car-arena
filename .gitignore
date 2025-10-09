@@ -1,10 +1,8 @@
-venv/
 __pychache__/
 *.py[cod]
 *$py.class
 venv/
 env/
-.vscode/
 .log
 *.env
 *.sqlite3
